@@ -1,0 +1,59 @@
+{% extends "admin/base.html" %}
+{% block title %}Coupons{% endblock %}
+{% block page_title %}Coupons{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-end mb-4">
+  <button class="btn-admin btn-admin-primary btn" data-bs-toggle="modal" data-bs-target="#couponModal"><i class="fa fa-plus me-2"></i>Create Coupon</button>
+</div>
+<div class="admin-table-card">
+  <div class="table-header"><h5>Coupons ({{ coupons|length }})</h5></div>
+  <div class="table-responsive">
+    <table class="admin-table">
+      <thead><tr><th>Code</th><th>Type</th><th>Value</th><th>Min Order</th><th>Used/Limit</th><th>Expiry</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for c in coupons %}
+        <tr>
+          <td class="fw-700" style="font-family:monospace;font-size:0.9rem;color:#2563eb">{{ c.code }}</td>
+          <td class="text-muted" style="font-size:0.85rem">{{ c.discount_type|title }}</td>
+          <td class="fw-700">{% if c.discount_type == 'percent' %}{{ c.discount_value }}%{% else %}₹{{ c.discount_value }}{% endif %}</td>
+          <td class="text-muted" style="font-size:0.85rem">₹{{ c.min_order_amount|default(0) }}</td>
+          <td class="text-muted" style="font-size:0.85rem">{{ c.used_count|default(0) }} / {{ c.usage_limit|default('∞') }}</td>
+          <td class="text-muted" style="font-size:0.8rem">{{ c.expires_at[:10] if c.expires_at else 'Never' }}</td>
+          <td><span class="status-pill status-{{ c.status|default('active') }}">{{ c.status|default('active')|title }}</span></td>
+          <td>
+            <button class="btn-admin btn-admin-danger btn btn-sm" onclick="deleteCoupon('{{ c._id }}')"><i class="fa fa-trash"></i></button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<!-- Coupon Modal -->
+<div class="modal fade admin-modal" id="couponModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title fw-700">Create Coupon</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <form id="couponForm">
+          <div class="mb-3"><label class="admin-form-label">Coupon Code *</label><input type="text" class="admin-input" name="code" required placeholder="SAVE20" style="text-transform:uppercase"></div>
+          <div class="row g-3 mb-3">
+            <div class="col-6"><label class="admin-form-label">Discount Type</label><select class="admin-input admin-select" name="discount_type"><option value="percent">Percent (%)</option><option value="flat">Flat (₹)</option></select></div>
+            <div class="col-6"><label class="admin-form-label">Discount Value *</label><input type="number" class="admin-input" name="discount_value" min="0" required placeholder="20"></div>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-6"><label class="admin-form-label">Min Order (₹)</label><input type="number" class="admin-input" name="min_order_amount" min="0" placeholder="0"></div>
+            <div class="col-6"><label class="admin-form-label">Max Discount (₹)</label><input type="number" class="admin-input" name="max_discount" min="0" placeholder="Leave blank for no limit"></div>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-6"><label class="admin-form-label">Usage Limit</label><input type="number" class="admin-input" name="usage_limit" min="0" placeholder="Leave blank for unlimited"></div>
+            <div class="col-6"><label class="admin-form-label">Expires At</label><input type="date" class="admin-input" name="expires_at"></div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer gap-2"><button class="btn-admin btn-admin-secondary btn" data-bs-dismiss="modal">Cancel</button><button class="btn-admin btn-admin-primary btn" onclick="createCoupon()">Create</button></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

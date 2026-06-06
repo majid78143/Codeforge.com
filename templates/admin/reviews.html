@@ -1,0 +1,45 @@
+{% extends "admin/base.html" %}
+{% block title %}Reviews{% endblock %}
+{% block page_title %}Reviews{% endblock %}
+{% block content %}
+<div class="d-flex gap-2 mb-4 flex-wrap">
+  {% for s in [('','All'),('pending','Pending'),('approved','Approved')] %}
+  <a href="/admin/reviews?status={{ s[0] }}" class="btn-admin btn {% if status_filter == s[0] %}btn-admin-primary{% else %}btn-admin-secondary{% endif %}">{{ s[1] }}</a>
+  {% endfor %}
+</div>
+<div class="admin-table-card">
+  <div class="table-header"><h5>Reviews ({{ total }})</h5></div>
+  <div class="table-responsive">
+    <table class="admin-table">
+      <thead><tr><th>User</th><th>Product ID</th><th>Rating</th><th>Comment</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for r in reviews %}
+        <tr>
+          <td style="font-size:0.85rem">{{ r.user_email }}</td>
+          <td><code style="font-size:0.75rem">{{ r.product_id }}</code></td>
+          <td>
+            <div class="stars">{% for i in range(1,6) %}<i class="fa fa-star {% if i > r.rating %}empty{% endif %}" style="font-size:0.75rem"></i>{% endfor %}</div>
+          </td>
+          <td class="text-muted" style="font-size:0.8rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.comment }}</td>
+          <td><span class="status-pill {% if r.approved %}status-active{% else %}status-pending{% endif %}">{% if r.approved %}Approved{% else %}Pending{% endif %}</span></td>
+          <td class="text-muted" style="font-size:0.8rem">{{ r.created_at[:10] if r.created_at else '-' }}</td>
+          <td>
+            <div class="d-flex gap-1">
+              {% if not r.approved %}<button class="btn-admin btn-admin-success btn btn-sm" onclick="approveReview('{{ r._id }}')"><i class="fa fa-check"></i></button>{% endif %}
+              <button class="btn-admin btn-admin-danger btn btn-sm" onclick="deleteReview('{{ r._id }}')"><i class="fa fa-trash"></i></button>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if total_pages > 1 %}
+  <div class="p-3 d-flex gap-1 justify-content-center">
+    {% for i in range(1, total_pages+1) %}
+    <a href="?page={{ i }}&status={{ status_filter }}" class="btn-admin btn btn-sm {% if i == page %}btn-admin-primary{% else %}btn-admin-secondary{% endif %}">{{ i }}</a>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

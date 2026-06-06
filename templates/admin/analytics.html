@@ -1,0 +1,60 @@
+{% extends "admin/base.html" %}
+{% block title %}Analytics{% endblock %}
+{% block page_title %}Analytics{% endblock %}
+{% block content %}
+<div class="row g-3 mb-4">
+  {% for s in [('Total Revenue','₹'+"{:,.0f}".format(stats.total_revenue),'fa-rupee-sign','icon-green'),('Total Orders',stats.total_orders,'fa-shopping-bag','icon-blue'),('Total Users',stats.total_users,'fa-users','icon-purple'),('Avg Order','₹'+"{:,.0f}".format(stats.avg_order),'fa-chart-bar','icon-orange')] %}
+  <div class="col-6 col-lg-3">
+    <div class="admin-stat-card"><div class="d-flex justify-content-between align-items-start"><div><div class="stat-name">{{ s[0] }}</div><div class="stat-number">{{ s[1] }}</div></div><div class="stat-icon {{ s[3] }}"><i class="fa {{ s[2] }}"></i></div></div></div>
+  </div>
+  {% endfor %}
+</div>
+<div class="row g-4 mb-4">
+  <div class="col-lg-8"><div class="chart-card"><h5>Revenue — Last 30 Days</h5><div style="height:280px"><canvas id="revenueChart"></canvas></div></div></div>
+  <div class="col-lg-4"><div class="chart-card"><h5>Orders by Status</h5><div style="height:280px"><canvas id="statusChart"></canvas></div></div></div>
+</div>
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="admin-table-card">
+      <div class="table-header"><h5>Top Products</h5></div>
+      <div class="table-responsive">
+        <table class="admin-table">
+          <thead><tr><th>Product</th><th>Sales</th><th>Revenue</th></tr></thead>
+          <tbody>
+            {% for p in top_products %}
+            <tr>
+              <td><div class="fw-600" style="font-size:0.85rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ p.title }}</div></td>
+              <td class="fw-700">{{ p.sales_count or 0 }}</td>
+              <td class="text-success fw-700">₹{{ "%.0f"|format((p.discount_price or p.price) * (p.sales_count or 0)) }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="chart-card">
+      <h5>Orders per Day (Last 14 Days)</h5>
+      <div style="height:240px"><canvas id="ordersChart"></canvas></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+const chartData = {{ revenue_chart | tojson }};
+const ordersChartData = {{ orders_chart | tojson }};
+const statusData = {{ status_data | tojson }};
+document.addEventListener('DOMContentLoaded', () => {
+  renderRevenueChart(chartData, 'revenueChart');
+  if (ordersChartData) {
+    new Chart(document.getElementById('ordersChart'), { type:'bar', data:{ labels: ordersChartData.labels, datasets:[{ label:'Orders', data: ordersChartData.values, backgroundColor:'rgba(37,99,235,0.6)', borderRadius:4 }] }, options:{ responsive:true, maintainAspectRatio:false } });
+  }
+  if (statusData) {
+    new Chart(document.getElementById('statusChart'), { type:'doughnut', data:{ labels: Object.keys(statusData), datasets:[{ data: Object.values(statusData), backgroundColor:['#22c55e','#f59e0b','#ef4444','#64748b'] }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom' } } } });
+  }
+});
+</script>
+{% endblock %}
+

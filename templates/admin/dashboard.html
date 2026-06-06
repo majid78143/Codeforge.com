@@ -1,0 +1,125 @@
+{% extends "admin/base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block content %}
+<!-- Stat Cards -->
+<div class="row g-3 mb-4">
+  {% for s in [
+    ('Total Revenue','₹'+"{:,.0f}".format(stats.total_revenue),'fa-rupee-sign','icon-green'),
+    ('Total Orders',stats.total_orders,'fa-shopping-bag','icon-blue'),
+    ('Total Users',stats.total_users,'fa-users','icon-purple'),
+    ('Total Products',stats.total_products,'fa-box','icon-orange'),
+    ('Month Revenue','₹'+"{:,.0f}".format(stats.month_revenue),'fa-chart-line','icon-teal'),
+    ('Month Orders',stats.month_orders,'fa-calendar','icon-blue'),
+    ('Pending Reviews',stats.pending_reviews,'fa-star','icon-orange'),
+    ('Custom Orders',stats.pending_custom_orders,'fa-robot','icon-purple'),
+  ] %}
+  <div class="col-6 col-lg-3">
+    <div class="admin-stat-card">
+      <div class="d-flex justify-content-between align-items-start">
+        <div><div class="stat-name">{{ s[0] }}</div><div class="stat-number">{{ s[1] }}</div></div>
+        <div class="stat-icon {{ s[3] }}"><i class="fa {{ s[2] }}"></i></div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+<div class="row g-4 mb-4">
+  <!-- Revenue Chart -->
+  <div class="col-lg-8">
+    <div class="chart-card">
+      <h5>Revenue — Last 7 Days</h5>
+      <div style="height:240px"><canvas id="revenueChart"></canvas></div>
+    </div>
+  </div>
+  <!-- Quick Actions -->
+  <div class="col-lg-4">
+    <div class="chart-card h-100">
+      <h5>Quick Actions</h5>
+      <div class="d-flex flex-column gap-2 mt-3">
+        <button class="btn-admin btn-admin-primary btn justify-content-start" onclick="openProductModal()"><i class="fa fa-plus me-2"></i>Add Product</button>
+        <a href="/admin/coupons" class="btn-admin btn-admin-success btn justify-content-start text-white"><i class="fa fa-tag me-2"></i>Create Coupon</a>
+        <a href="/admin/reviews?status=pending" class="btn-admin btn-admin-warning btn justify-content-start text-white"><i class="fa fa-star me-2"></i>Moderate Reviews <span class="badge bg-white text-warning ms-auto">{{ stats.pending_reviews }}</span></a>
+        <a href="/admin/custom-orders?status=pending" class="btn-admin btn-admin-secondary btn justify-content-start"><i class="fa fa-robot me-2"></i>Custom Orders <span class="badge bg-primary ms-auto">{{ stats.pending_custom_orders }}</span></a>
+        <button class="btn-admin btn-admin-secondary btn justify-content-start" data-bs-toggle="modal" data-bs-target="#notifModal"><i class="fa fa-bell me-2"></i>Send Notification</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Recent Orders + Users -->
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="admin-table-card">
+      <div class="table-header"><h5>Recent Orders</h5><a href="/admin/orders" class="btn-admin btn-admin-secondary btn btn-sm">View All</a></div>
+      <div class="table-responsive">
+        <table class="admin-table">
+          <thead><tr><th>Order ID</th><th>User</th><th>Total</th><th>Status</th><th>Date</th></tr></thead>
+          <tbody>
+            {% for o in recent_orders %}
+            <tr>
+              <td class="fw-600" style="font-family:monospace;font-size:0.8rem">{{ o.order_id }}</td>
+              <td class="text-truncate" style="max-width:150px">{{ o.user_email }}</td>
+              <td class="fw-700">₹{{ "%.0f"|format(o.total) }}</td>
+              <td><span class="status-pill status-{{ o.payment_status }}">{{ o.payment_status|title }}</span></td>
+              <td>{{ o.created_at[:10] if o.created_at else '-' }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="admin-table-card">
+      <div class="table-header"><h5>New Users</h5><a href="/admin/users" class="btn-admin btn-admin-secondary btn btn-sm">View All</a></div>
+      <div class="table-responsive">
+        <table class="admin-table">
+          <thead><tr><th>User</th><th>Joined</th></tr></thead>
+          <tbody>
+            {% for u in recent_users %}
+            <tr>
+              <td>
+                <div class="fw-600 text-truncate" style="max-width:180px">{{ u.display_name or u.email }}</div>
+                <div class="text-muted" style="font-size:0.75rem;text-overflow:ellipsis;overflow:hidden;max-width:180px">{{ u.email }}</div>
+              </td>
+              <td class="text-muted" style="font-size:0.8rem">{{ u.created_at[:10] if u.created_at else '-' }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Send Notification Modal -->
+<div class="modal fade admin-modal" id="notifModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title fw-700">Send Notification</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <form id="notifForm">
+          <div class="mb-3"><label class="admin-form-label">Target</label>
+            <select class="admin-input admin-select" name="target"><option value="all">All Users</option></select>
+          </div>
+          <div class="mb-3"><label class="admin-form-label">Title</label><input type="text" class="admin-input" name="title" required placeholder="Notification title"></div>
+          <div class="mb-3"><label class="admin-form-label">Message</label><textarea class="admin-input admin-textarea" name="message" required placeholder="Notification message"></textarea></div>
+          <div class="mb-3"><label class="admin-form-label">Type</label>
+            <select class="admin-input admin-select" name="type"><option value="info">Info</option><option value="success">Success</option><option value="warning">Warning</option></select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer gap-2"><button class="btn-admin btn-admin-secondary btn" data-bs-dismiss="modal">Cancel</button><button class="btn-admin btn-admin-primary btn" onclick="sendNotification()">Send</button></div>
+    </div>
+  </div>
+</div>
+
+{% include "admin/product_modal.html" %}
+{% endblock %}
+{% block extra_js %}
+<script>
+const chartData = {{ revenue_chart | tojson }};
+document.addEventListener('DOMContentLoaded', () => renderRevenueChart(chartData));
+</script>
+{% endblock %}
+

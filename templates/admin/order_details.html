@@ -1,0 +1,38 @@
+{% extends "admin/base.html" %}
+{% block title %}Order {{ order.order_id }}{% endblock %}
+{% block page_title %}Order Detail{% endblock %}
+{% block content %}
+<div class="mb-3"><a href="/admin/orders" class="btn-admin btn-admin-secondary btn btn-sm"><i class="fa fa-arrow-left me-1"></i>Back to Orders</a></div>
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="admin-table-card">
+      <div class="table-header"><h5>Order Items</h5></div>
+      <div class="p-4">
+        {% for item in order.items %}
+        <div class="d-flex gap-3 align-items-center {% if not loop.last %}mb-3 pb-3 border-bottom{% endif %}">
+          <img src="{{ item.thumbnail_image_url or 'https://placehold.co/60x45' }}" style="width:60px;height:45px;object-fit:cover;border-radius:8px" alt="">
+          <div class="flex-grow-1"><div class="fw-600">{{ item.title }}</div><div class="text-muted" style="font-size:0.8rem">Qty: {{ item.quantity }}</div></div>
+          <div class="fw-700">₹{{ "%.0f"|format((item.discount_price or item.price) * item.quantity) }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="chart-card mb-3">
+      <h5>Order Summary</h5>
+      <div class="d-flex justify-content-between mb-2 text-muted" style="font-size:0.875rem"><span>Order ID</span><span class="fw-700 text-dark" style="font-family:monospace">{{ order.order_id }}</span></div>
+      <div class="d-flex justify-content-between mb-2 text-muted" style="font-size:0.875rem"><span>User</span><span>{{ order.user_email }}</span></div>
+      <div class="d-flex justify-content-between mb-2 text-muted" style="font-size:0.875rem"><span>Subtotal</span><span>₹{{ "%.2f"|format(order.subtotal or 0) }}</span></div>
+      {% if order.discount %}<div class="d-flex justify-content-between mb-2 text-muted" style="font-size:0.875rem"><span>Discount ({{ order.coupon_code }})</span><span class="text-success">-₹{{ "%.2f"|format(order.discount) }}</span></div>{% endif %}
+      <div class="d-flex justify-content-between mt-2 pt-2 border-top fw-800" style="font-size:1rem"><span>Total</span><span class="text-primary">₹{{ "%.2f"|format(order.total) }}</span></div>
+    </div>
+    <div class="chart-card">
+      <h5>Payment Info</h5>
+      <div class="mb-2"><span class="status-pill status-{{ order.payment_status }}">{{ order.payment_status|title }}</span></div>
+      {% if order.razorpay_payment_id %}<div class="text-muted" style="font-size:0.8rem">Payment ID: <code>{{ order.razorpay_payment_id }}</code></div>{% endif %}
+      {% if order.paid_at %}<div class="text-muted" style="font-size:0.8rem">Paid at: {{ order.paid_at[:16].replace('T',' ') }}</div>{% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

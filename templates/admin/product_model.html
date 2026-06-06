@@ -1,0 +1,32 @@
+<!-- Product Modal -->
+<div class="modal fade admin-modal" id="productModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title fw-700" id="productModalTitle">Add Product</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <form id="productForm">
+          <input type="hidden" id="productId" name="product_id">
+          <div class="row g-3">
+            <div class="col-12"><label class="admin-form-label">Title *</label><input type="text" class="admin-input" id="prod_title" name="title" required placeholder="Product title"></div>
+            <div class="col-md-6"><label class="admin-form-label">Category</label>
+              <input type="text" class="admin-input" id="prod_category" name="category" placeholder="Discord Bots, Scripts...">
+            </div>
+            <div class="col-md-3"><label class="admin-form-label">Price (₹) *</label><input type="number" class="admin-input" id="prod_price" name="price" min="0" step="0.01" required placeholder="0.00"></div>
+            <div class="col-md-3"><label class="admin-form-label">Discount Price</label><input type="number" class="admin-input" id="prod_discount_price" name="discount_price" min="0" step="0.01" placeholder="Leave blank for none"></div>
+            <div class="col-12"><label class="admin-form-label">Tags (comma-separated)</label><input type="text" class="admin-input" id="prod_tags" name="tags" placeholder="featured, trending, new, bestseller, premium"></div>
+            <div class="col-12"><label class="admin-form-label">Description *</label><textarea class="admin-input admin-textarea" id="prod_description" name="description" required placeholder="Full product description..."></textarea></div>
+            <div class="col-md-6"><label class="admin-form-label">Thumbnail Image URL</label><input type="url" class="admin-input" id="prod_thumbnail_image_url" name="thumbnail_image_url" placeholder="https://..."></div>
+            <div class="col-md-6"><label class="admin-form-label">Banner Image URL</label><input type="url" class="admin-input" id="prod_banner_image_url" name="banner_image_url" placeholder="https://..."></div>
+            <div class="col-12"><label class="admin-form-label">Gallery Images (one URL per line)</label><textarea class="admin-input" id="prod_gallery_images" name="gallery_images" rows="3" placeholder="https://image1.jpg&#10;https://image2.jpg"></textarea></div>
+            <div class="col-12"><label class="admin-form-label">Features (one per line)</label><textarea class="admin-input" id="prod_features" name="features" rows="4" placeholder="Feature 1&#10;Feature 2&#10;Feature 3"></textarea></div>
+            <div class="col-12"><label class="admin-form-label">MediaFire Download Link *</label><input type="url" class="admin-input" id="prod_mediafire_download_link" name="mediafire_download_link" placeholder="https://www.mediafire.com/..."></div>
+            <div class="col-md-6"><label class="admin-form-label">Status</label>
+              <select class="admin-input admin-select" id="prod_status" name="status"><option value="active">Active</option><option value="inactive">Inactive</option></select>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer gap-2"><button class="btn-admin btn-admin-secondary btn" data-bs-dismiss="modal">Cancel</button><button class="btn-admin btn-admin-primary btn" onclick="saveProduct()">Save Product</button></div>
+    </div>
+  </div>
+</div>

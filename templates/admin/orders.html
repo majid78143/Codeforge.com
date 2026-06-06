@@ -1,0 +1,39 @@
+{% extends "admin/base.html" %}
+{% block title %}Orders{% endblock %}
+{% block page_title %}Orders{% endblock %}
+{% block content %}
+<div class="d-flex gap-2 mb-4 flex-wrap">
+  {% for s in [('','All'),('paid','Paid'),('pending','Pending'),('failed','Failed')] %}
+  <a href="/admin/orders?status={{ s[0] }}" class="btn-admin btn {% if status_filter == s[0] %}btn-admin-primary{% else %}btn-admin-secondary{% endif %} btn">{{ s[1] }}</a>
+  {% endfor %}
+</div>
+<div class="admin-table-card">
+  <div class="table-header"><h5>Orders ({{ total }})</h5></div>
+  <div class="table-responsive">
+    <table class="admin-table">
+      <thead><tr><th>Order ID</th><th>User</th><th>Items</th><th>Total</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
+      <tbody>
+        {% for o in orders %}
+        <tr>
+          <td class="fw-600" style="font-family:monospace;font-size:0.8rem">{{ o.order_id }}</td>
+          <td class="text-truncate" style="max-width:160px;font-size:0.85rem">{{ o.user_email }}</td>
+          <td class="text-muted" style="font-size:0.85rem">{{ o.items|length }} item(s)</td>
+          <td class="fw-700">₹{{ "%.2f"|format(o.total) }}</td>
+          <td><span class="status-pill status-{{ o.payment_status }}">{{ o.payment_status|title }}</span></td>
+          <td class="text-muted" style="font-size:0.8rem">{{ o.created_at[:10] if o.created_at else '-' }}</td>
+          <td><a href="/admin/orders/{{ o.order_id }}" class="btn-admin btn-admin-secondary btn btn-sm"><i class="fa fa-eye me-1"></i>View</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if total_pages > 1 %}
+  <div class="p-3 d-flex gap-1 justify-content-center">
+    {% for i in range(1, total_pages+1) %}
+    <a href="?page={{ i }}&status={{ status_filter }}" class="btn-admin btn btn-sm {% if i == page %}btn-admin-primary{% else %}btn-admin-secondary{% endif %}">{{ i }}</a>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+

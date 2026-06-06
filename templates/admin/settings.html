@@ -1,0 +1,56 @@
+{% extends "admin/base.html" %}
+{% block title %}Settings{% endblock %}
+{% block page_title %}Site Settings{% endblock %}
+{% block content %}
+<div class="row g-4" style="max-width:900px">
+  <div class="col-12">
+    <div id="settingsSuccess" class="alert alert-success d-none"><i class="fa fa-check-circle me-2"></i>Settings saved successfully!</div>
+    <form id="settingsForm" onsubmit="saveSettings(event)">
+      <!-- General -->
+      <div class="chart-card mb-4">
+        <h5 class="mb-4">General</h5>
+        <div class="row g-3">
+          <div class="col-md-6"><label class="admin-form-label">Site Name</label><input type="text" class="admin-input" name="site_name" value="{{ settings.site_name|default('CodeForge Market') }}" required></div>
+          <div class="col-md-6"><label class="admin-form-label">Contact Email</label><input type="email" class="admin-input" name="contact_email" value="{{ settings.contact_email|default('') }}"></div>
+          <div class="col-md-6"><label class="admin-form-label">Discord Server URL</label><input type="url" class="admin-input" name="discord_url" value="{{ settings.discord_url|default('') }}" placeholder="https://discord.gg/..."></div>
+          <div class="col-md-6"><label class="admin-form-label">Tax Percent (%)</label><input type="number" class="admin-input" name="tax_percent" value="{{ settings.tax_percent|default(0) }}" min="0" max="100" step="0.01"></div>
+          <div class="col-12"><label class="admin-form-label">Site Description</label><textarea class="admin-input admin-textarea" name="site_description" rows="2">{{ settings.site_description|default('') }}</textarea></div>
+        </div>
+      </div>
+      <!-- Razorpay -->
+      <div class="chart-card mb-4">
+        <h5 class="mb-4">Razorpay</h5>
+        <div class="row g-3">
+          <div class="col-md-6"><label class="admin-form-label">Key ID</label><input type="text" class="admin-input" name="razorpay_key_id" value="{{ settings.razorpay_key_id|default('') }}" placeholder="rzp_live_..."></div>
+          <div class="col-md-6"><label class="admin-form-label">Key Secret</label><input type="password" class="admin-input" name="razorpay_key_secret" placeholder="Leave blank to keep existing"></div>
+        </div>
+      </div>
+      <!-- Maintenance -->
+      <div class="chart-card mb-4">
+        <h5 class="mb-4">Maintenance</h5>
+        <div class="form-check form-switch mb-3">
+          <input class="form-check-input" type="checkbox" id="maintenanceMode" name="maintenance_mode" {% if settings.maintenance_mode %}checked{% endif %}>
+          <label class="form-check-label fw-600" for="maintenanceMode">Enable Maintenance Mode</label>
+        </div>
+        <div><label class="admin-form-label">Maintenance Message</label><textarea class="admin-input admin-textarea" name="maintenance_message" rows="2">{{ settings.maintenance_message|default('We are under maintenance. Please check back soon.') }}</textarea></div>
+      </div>
+      <button type="submit" class="btn-admin btn-admin-primary btn" id="saveSettingsBtn">Save Settings</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+async function saveSettings(e) {
+  e.preventDefault();
+  const btn = document.getElementById('saveSettingsBtn');
+  btn.disabled = true; btn.textContent = 'Saving...';
+  const data = Object.fromEntries(new FormData(e.target));
+  data.maintenance_mode = document.getElementById('maintenanceMode').checked;
+  const res = await fetch('/admin/settings', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) });
+  if (res.ok) { document.getElementById('settingsSuccess').classList.remove('d-none'); AdminToast.show('Settings saved!', 'success'); }
+  else AdminToast.show('Save failed', 'error');
+  btn.disabled = false; btn.textContent = 'Save Settings';
+}
+</script>
+{% endblock %}

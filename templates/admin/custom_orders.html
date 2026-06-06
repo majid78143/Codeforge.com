@@ -1,0 +1,46 @@
+{% extends "admin/base.html" %}
+{% block title %}Custom Orders{% endblock %}
+{% block page_title %}Custom Dev Orders{% endblock %}
+{% block content %}
+<div class="d-flex gap-2 mb-4 flex-wrap">
+  {% for s in [('','All'),('pending','Pending'),('in_progress','In Progress'),('completed','Completed'),('cancelled','Cancelled')] %}
+  <a href="/admin/custom-orders?status={{ s[0] }}" class="btn-admin btn {% if status_filter == s[0] %}btn-admin-primary{% else %}btn-admin-secondary{% endif %}">{{ s[1]|replace('_',' ')|title }}</a>
+  {% endfor %}
+</div>
+<div class="admin-table-card">
+  <div class="table-header"><h5>Custom Dev Orders ({{ total }})</h5></div>
+  <div class="table-responsive">
+    <table class="admin-table">
+      <thead><tr><th>User</th><th>Project</th><th>Bot Type</th><th>Budget</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for o in orders %}
+        <tr>
+          <td style="font-size:0.85rem">{{ o.user_email }}</td>
+          <td class="fw-600" style="font-size:0.85rem">{{ o.project_name }}</td>
+          <td class="text-muted" style="font-size:0.8rem">{{ o.bot_type }}</td>
+          <td class="text-muted" style="font-size:0.8rem">{{ o.budget }}</td>
+          <td><span class="status-pill status-{{ o.status }}">{{ o.status|replace('_',' ')|title }}</span></td>
+          <td class="text-muted" style="font-size:0.8rem">{{ o.created_at[:10] if o.created_at else '-' }}</td>
+          <td>
+            <select class="admin-input admin-select" style="font-size:0.75rem;padding:4px 8px;width:130px" onchange="updateCustomOrderStatus('{{ o._id }}', this.value)">
+              <option value="pending" {% if o.status == 'pending' %}selected{% endif %}>Pending</option>
+              <option value="in_progress" {% if o.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+              <option value="completed" {% if o.status == 'completed' %}selected{% endif %}>Completed</option>
+              <option value="cancelled" {% if o.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+            </select>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if total_pages > 1 %}
+  <div class="p-3 d-flex gap-1 justify-content-center">
+    {% for i in range(1, total_pages+1) %}
+    <a href="?page={{ i }}&status={{ status_filter }}" class="btn-admin btn btn-sm {% if i == page %}btn-admin-primary{% else %}btn-admin-secondary{% endif %}">{{ i }}</a>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+

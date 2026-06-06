@@ -1,0 +1,55 @@
+{% extends "admin/base.html" %}
+{% block title %}Notifications{% endblock %}
+{% block page_title %}Send Notifications{% endblock %}
+{% block content %}
+<div class="row g-4" style="max-width:800px">
+  <div class="col-12">
+    <div class="chart-card mb-4">
+      <h5 class="mb-4">Send New Notification</h5>
+      <form id="notifForm" onsubmit="sendNotifForm(event)">
+        <div class="row g-3">
+          <div class="col-md-6"><label class="admin-form-label">Target User Email</label><input type="email" class="admin-input" name="target_email" placeholder="Leave blank to notify all users"></div>
+          <div class="col-md-6"><label class="admin-form-label">Type</label><select class="admin-input admin-select" name="type"><option value="info">Info</option><option value="success">Success</option><option value="warning">Warning</option><option value="error">Error</option></select></div>
+          <div class="col-12"><label class="admin-form-label">Title *</label><input type="text" class="admin-input" name="title" required placeholder="Notification title"></div>
+          <div class="col-12"><label class="admin-form-label">Message *</label><textarea class="admin-input admin-textarea" name="message" required rows="3" placeholder="Notification message..."></textarea></div>
+        </div>
+        <button type="submit" class="btn-admin btn-admin-primary btn mt-4" id="notifSendBtn">Send Notification</button>
+      </form>
+    </div>
+    <div class="admin-table-card">
+      <div class="table-header"><h5>Recent Notifications</h5></div>
+      <div class="table-responsive">
+        <table class="admin-table">
+          <thead><tr><th>Title</th><th>Type</th><th>Target</th><th>Sent</th></tr></thead>
+          <tbody>
+            {% for n in notifications %}
+            <tr>
+              <td class="fw-600" style="font-size:0.875rem">{{ n.title }}</td>
+              <td><span class="badge bg-secondary">{{ n.type }}</span></td>
+              <td class="text-muted" style="font-size:0.8rem">{{ n.user_email or 'All' }}</td>
+              <td class="text-muted" style="font-size:0.8rem">{{ n.created_at[:16].replace('T',' ') if n.created_at else '-' }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+async function sendNotifForm(e) {
+  e.preventDefault();
+  const btn = document.getElementById('notifSendBtn');
+  btn.disabled = true; btn.textContent = 'Sending...';
+  const data = Object.fromEntries(new FormData(e.target));
+  const res = await fetch('/admin/notifications', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) });
+  const result = await res.json();
+  if (res.ok) { AdminToast.show(result.message || 'Notification sent!', 'success'); e.target.reset(); setTimeout(() => location.reload(), 1500); }
+  else AdminToast.show(result.error || 'Failed', 'error');
+  btn.disabled = false; btn.textContent = 'Send Notification';
+}
+</script>
+{% endblock %}
+

@@ -1,0 +1,58 @@
+{% extends "admin/base.html" %}
+{% block title %}Products{% endblock %}
+{% block page_title %}Products{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <form class="d-flex gap-2" method="GET">
+    <input type="text" class="admin-input" name="q" value="{{ q }}" placeholder="Search products..." style="width:240px">
+    <button class="btn-admin btn-admin-secondary btn" type="submit"><i class="fa fa-search"></i></button>
+  </form>
+  <button class="btn-admin btn-admin-primary btn" onclick="openProductModal()"><i class="fa fa-plus me-2"></i>Add Product</button>
+</div>
+<div class="admin-table-card">
+  <div class="table-header"><h5>All Products ({{ total }})</h5></div>
+  <div class="table-responsive">
+    <table class="admin-table">
+      <thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Sales</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for p in products %}
+        <tr>
+          <td>
+            <div class="d-flex gap-3 align-items-center">
+              <img src="{{ p.thumbnail_image_url or 'https://placehold.co/48x36/e2e8f0/94a3b8?text=IMG' }}" style="width:48px;height:36px;object-fit:cover;border-radius:6px" alt="">
+              <div>
+                <div class="fw-600" style="font-size:0.875rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ p.title }}</div>
+                <div class="d-flex flex-wrap gap-1 mt-1">{% for t in (p.tags or [])[:3] %}<span class="tag-pill" style="font-size:0.65rem">{{ t }}</span>{% endfor %}</div>
+              </div>
+            </div>
+          </td>
+          <td class="text-muted" style="font-size:0.85rem">{{ p.category or '-' }}</td>
+          <td>
+            <div class="fw-700">₹{{ "%.0f"|format(p.discount_price or p.price) }}</div>
+            {% if p.discount_price %}<div class="text-muted text-decoration-line-through" style="font-size:0.75rem">₹{{ "%.0f"|format(p.price) }}</div>{% endif %}
+          </td>
+          <td class="fw-600">{{ p.sales_count or 0 }}</td>
+          <td><span class="status-pill status-{{ p.status }}">{{ p.status|title }}</span></td>
+          <td>
+            <div class="d-flex gap-1">
+              <button class="btn-admin btn-admin-secondary btn btn-sm" onclick="openProductModal('{{ p._id }}')"><i class="fa fa-edit"></i></button>
+              <button class="btn-admin btn-admin-danger btn btn-sm" onclick="deleteProduct('{{ p._id }}')"><i class="fa fa-trash"></i></button>
+              <a href="/product/{{ p._id }}" target="_blank" class="btn-admin btn-admin-secondary btn btn-sm"><i class="fa fa-eye"></i></a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if total_pages > 1 %}
+  <div class="p-3 d-flex gap-1 justify-content-center">
+    {% for i in range(1, total_pages+1) %}
+    <a href="?page={{ i }}&q={{ q }}" class="btn-admin btn btn-sm {% if i == page %}btn-admin-primary{% else %}btn-admin-secondary{% endif %}">{{ i }}</a>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% include "admin/product_modal.html" %}
+{% endblock %}
+
