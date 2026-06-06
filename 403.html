@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}403 - Access Denied{% endblock %}
+{% block content %}
+<div class="min-vh-100 d-flex align-items-center justify-content-center text-center py-5">
+  <div>
+    <div style="font-size:6rem;font-weight:900;color:var(--danger)">403</div>
+    <h2 class="fw-800 mb-2">Access Denied</h2>
+    <p class="text-muted mb-4">You don't have permission to view this page.</p>
+    <a href="/" class="btn-primary-main btn">Go Home</a>
+  </div>
+</div>
+{% endblock %}
