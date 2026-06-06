@@ -1,0 +1,51 @@
+{% extends "admin/base.html" %}
+{% block title %}Admin Management{% endblock %}
+{% block page_title %}Admin Management{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-end mb-4">
+  <button class="btn-admin btn-admin-primary btn" data-bs-toggle="modal" data-bs-target="#addAdminModal"><i class="fa fa-plus me-2"></i>Add Admin</button>
+</div>
+<div class="admin-table-card">
+  <div class="table-header"><h5>Admins ({{ admins|length }})</h5></div>
+  <div class="table-responsive">
+    <table class="admin-table">
+      <thead><tr><th>Username</th><th>Email</th><th>Role</th><th>Created</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for a in admins %}
+        <tr>
+          <td class="fw-700" style="font-size:0.9rem">{{ a.username }}</td>
+          <td class="text-muted" style="font-size:0.85rem">{{ a.email }}</td>
+          <td><span class="badge {% if a.role == 'super_admin' %}bg-danger{% else %}bg-primary{% endif %}">{{ a.role|replace('_',' ')|title }}</span></td>
+          <td class="text-muted" style="font-size:0.8rem">{{ a.created_at[:10] if a.created_at else '-' }}</td>
+          <td>
+            {% if a.role != 'super_admin' %}
+            <button class="btn-admin btn-admin-danger btn btn-sm" onclick="removeAdmin('{{ a._id }}')"><i class="fa fa-trash me-1"></i>Remove</button>
+            {% else %}
+            <span class="text-muted" style="font-size:0.8rem">Super Admin</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<!-- Add Admin Modal -->
+<div class="modal fade admin-modal" id="addAdminModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title fw-700">Add Admin</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <form id="addAdminForm">
+          <div class="mb-3"><label class="admin-form-label">Username *</label><input type="text" class="admin-input" name="username" required placeholder="adminuser"></div>
+          <div class="mb-3"><label class="admin-form-label">Email *</label><input type="email" class="admin-input" name="email" required placeholder="admin@example.com"></div>
+          <div class="mb-3"><label class="admin-form-label">Password *</label><input type="password" class="admin-input" name="password" required placeholder="Minimum 8 characters"></div>
+          <div class="mb-3"><label class="admin-form-label">Role</label><select class="admin-input admin-select" name="role"><option value="admin">Admin</option><option value="moderator">Moderator</option></select></div>
+        </form>
+      </div>
+      <div class="modal-footer gap-2"><button class="btn-admin btn-admin-secondary btn" data-bs-dismiss="modal">Cancel</button><button class="btn-admin btn-admin-primary btn" onclick="addAdmin()">Add Admin</button></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
