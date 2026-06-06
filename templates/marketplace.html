@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Marketplace - {{ site_settings.site_name | default('CodeForge Market') }}{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="row">
+    <!-- Filter Sidebar -->
+    <div class="col-lg-3">
+      <div class="filter-sidebar">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="m-0 fw-700" style="font-size:0.95rem">Filters</h5>
+          <a href="/marketplace" class="text-muted" style="font-size:0.8rem">Clear All</a>
+        </div>
+        <form method="GET" id="filterForm">
+          <div class="filter-group">
+            <h6>Category</h6>
+            <select class="form-select form-select-sm" name="category" onchange="document.getElementById('filterForm').submit()">
+              <option value="">All Categories</option>
+              {% for cat in categories %}
+              <option value="{{ cat.slug }}" {% if current_category == cat.slug %}selected{% endif %}>{{ cat.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="filter-group">
+            <h6>Tag</h6>
+            <div class="d-flex flex-wrap gap-2">
+              {% for t in ['featured','trending','new','bestseller','premium'] %}
+              <a href="/marketplace?tag={{ t }}&category={{ current_category }}" class="tag-pill {% if current_tag == t %}text-white{% endif %}" style="{% if current_tag == t %}background:var(--primary);border-color:var(--primary){% endif %}">{{ t|title }}</a>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="filter-group">
+            <h6>Price Range</h6>
+            <div class="d-flex gap-2">
+              <input class="form-control form-control-sm" type="number" name="min_price" placeholder="Min ₹" value="{{ request.args.get('min_price','') }}">
+              <input class="form-control form-control-sm" type="number" name="max_price" placeholder="Max ₹" value="{{ request.args.get('max_price','') }}">
+            </div>
+            <button type="submit" class="btn btn-sm w-100 mt-2" style="background:var(--primary);color:white;border-radius:8px">Apply</button>
+          </div>
+          <div class="filter-group">
+            <h6>Sort By</h6>
+            <select class="form-select form-select-sm" name="sort" onchange="document.getElementById('filterForm').submit()">
+              <option value="latest" {% if current_sort=='latest' %}selected{% endif %}>Latest</option>
+              <option value="popular" {% if current_sort=='popular' %}selected{% endif %}>Most Popular</option>
+              <option value="price_asc" {% if current_sort=='price_asc' %}selected{% endif %}>Price: Low to High</option>
+              <option value="price_desc" {% if current_sort=='price_desc' %}selected{% endif %}>Price: High to Low</option>
+            </select>
+          </div>
+        </form>
+      </div>
+    </div>
+    <!-- Products Grid -->
+    <div class="col-lg-9">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h4 class="fw-800 m-0">{% if current_category %}{{ current_category|title }}{% elif current_tag %}{{ current_tag|title }}{% else %}All Products{% endif %}</h4>
+          <small class="text-muted">{{ total }} products found</small>
+        </div>
+        <div class="d-md-none">
+          <select class="form-select form-select-sm" onchange="window.location.href='/marketplace?sort='+this.value">
+            <option value="latest">Latest</option><option value="popular">Popular</option>
+            <option value="price_asc">Price ↑</option><option value="price_desc">Price ↓</option>
+          </select>
+        </div>
+      </div>
+      {% if products %}
+      <div class="row g-4" id="productsGrid">
+        {% for p in products %}
+        <div class="col-sm-6 col-xl-4">{% include 'partials/product_card.html' %}</div>
+        {% endfor %}
+      </div>
+      {% include 'partials/pagination.html' %}
+      {% else %}
+      <div class="text-center py-5">
+        <div style="font-size:4rem;margin-bottom:1rem">📦</div>
+        <h4 class="fw-700">No products found</h4>
+        <p class="text-muted">Try adjusting your filters or search terms</p>
+        <a href="/marketplace" class="btn-primary-main btn">Clear Filters</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

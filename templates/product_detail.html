@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% block title %}{{ product.title }} - {{ site_settings.site_name | default('CodeForge Market') }}{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb"><li class="breadcrumb-item"><a href="/">Home</a></li><li class="breadcrumb-item"><a href="/marketplace">Marketplace</a></li><li class="breadcrumb-item active">{{ product.title }}</li></ol>
+  </nav>
+  <div class="row g-5">
+    <!-- Gallery -->
+    <div class="col-lg-6">
+      <div class="product-gallery">
+        <img id="mainImage" src="{{ product.banner_image_url or product.thumbnail_image_url or 'https://placehold.co/800x450/e2e8f0/94a3b8?text=No+Image' }}" alt="{{ product.title }}" class="rounded-3 mb-3 w-100" style="aspect-ratio:16/9;object-fit:cover">
+        {% if product.gallery_images %}
+        <div class="d-flex gap-2 flex-wrap">
+          <img src="{{ product.thumbnail_image_url }}" class="thumb active" onclick="document.getElementById('mainImage').src=this.src;document.querySelectorAll('.thumb').forEach(t=>t.classList.remove('active'));this.classList.add('active')" alt="">
+          {% for img in product.gallery_images %}
+          <img src="{{ img }}" class="thumb" onclick="document.getElementById('mainImage').src=this.src;document.querySelectorAll('.thumb').forEach(t=>t.classList.remove('active'));this.classList.add('active')" alt="">
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    <!-- Info -->
+    <div class="col-lg-6">
+      <div class="mb-2 d-flex gap-2 flex-wrap">
+        <span class="tag-pill"><i class="fa fa-folder me-1"></i>{{ product.category or 'General' }}</span>
+        {% for tag in (product.tags or []) %}<span class="tag-pill">{{ tag|title }}</span>{% endfor %}
+      </div>
+      <h1 class="fw-800 mb-3" style="font-size:1.75rem;letter-spacing:-0.5px">{{ product.title }}</h1>
+      <!-- Rating -->
+      {% if avg_rating %}
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <div class="stars">{% for i in range(1,6) %}{% if i <= avg_rating|round %}<i class="fa fa-star"></i>{% else %}<i class="fa fa-star empty"></i>{% endif %}{% endfor %}</div>
+        <span style="font-weight:700;font-size:0.9rem">{{ avg_rating }}</span>
+        <span class="text-muted" style="font-size:0.85rem">({{ reviews|length }} reviews)</span>
+      </div>
+      {% endif %}
+      <!-- Price -->
+      <div class="d-flex align-items-baseline gap-3 mb-4">
+        {% if product.discount_price %}
+        <span style="font-size:2.25rem;font-weight:900;color:var(--primary)">₹{{ "%.0f"|format(product.discount_price) }}</span>
+        <span style="font-size:1.1rem;text-decoration:line-through;color:var(--gray-400)">₹{{ "%.0f"|format(product.price) }}</span>
+        <span class="discount-badge" style="font-size:0.875rem;padding:0.35rem 0.7rem">{{ ((1-product.discount_price/product.price)*100)|round(0)|int }}% OFF</span>
+        {% else %}
+        <span style="font-size:2.25rem;font-weight:900;color:var(--primary)">₹{{ "%.0f"|format(product.price) }}</span>
+        {% endif %}
+      </div>
+      <!-- Features -->
+      {% if product.features %}
+      <ul class="mb-4" style="list-style:none;padding:0">
+        {% for f in product.features %}
+        <li class="mb-2" style="display:flex;align-items:flex-start;gap:0.6rem;font-size:0.9rem"><i class="fa fa-check-circle text-success mt-1"></i>{{ f }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+      <!-- Actions -->
+      {% if purchased %}
+      <div class="p-3 mb-3 rounded-3" style="background:#f0fdf4;border:1px solid #bbf7d0">
+        <p class="mb-2 fw-700" style="color:#15803d"><i class="fa fa-check-circle me-2"></i>You own this product</p>
+        <button class="btn-primary-main btn" onclick="downloadProduct('{{ product._id }}')"><i class="fa fa-download me-2"></i>Download Now</button>
+      </div>
+      {% else %}
+      <div class="d-flex gap-3 mb-4">
+        <button class="btn-primary-main btn flex-grow-1" data-add-cart="{{ product._id }}"><i class="fa fa-shopping-cart me-2"></i>Add to Cart</button>
+        <button class="btn-wishlist {% if in_wishlist %}active{% endif %}" data-wishlist="{{ product._id }}" style="width:52px;height:52px;border-radius:12px"><i class="fa fa-heart"></i></button>
+      </div>
+      {% endif %}
+      <!-- Stats -->
+      <div class="d-flex gap-4 p-3 rounded-3" style="background:var(--gray-50);border:1px solid var(--gray-200)">
+        <div class="text-center"><div class="fw-800">{{ product.sales_count or 0 }}</div><div class="text-muted" style="font-size:0.75rem">Sales</div></div>
+        <div class="text-center"><div class="fw-800">{{ product.view_count or 0 }}</div><div class="text-muted" style="font-size:0.75rem">Views</div></div>
+        <div class="text-center"><div class="fw-800 text-success"><i class="fa fa-shield"></i></div><div class="text-muted" style="font-size:0.75rem">Secure</div></div>
+        <div class="text-center"><div class="fw-800 text-primary"><i class="fa fa-download"></i></div><div class="text-muted" style="font-size:0.75rem">Instant</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Description Tabs -->
+  <div class="mt-5">
+    <ul class="nav nav-tabs mb-4" style="border-bottom:2px solid var(--gray-200)">
+      <li class="nav-item"><button class="nav-link active fw-700" data-bs-toggle="tab" data-bs-target="#desc">Description</button></li>
+      <li class="nav-item"><button class="nav-link fw-700" data-bs-toggle="tab" data-bs-target="#reviews-tab">Reviews ({{ reviews|length }})</button></li>
+    </ul>
+    <div class="tab-content">
+      <div class="tab-pane active" id="desc">
+        <div class="p-4" style="background:white;border-radius:var(--radius-lg);border:1px solid var(--gray-200)">
+          <p style="white-space:pre-wrap;line-height:1.8">{{ product.description }}</p>
+        </div>
+      </div>
+      <div class="tab-pane" id="reviews-tab">
+        {% if current_user_email and not purchased %}
+        <div class="p-4 mb-4" style="background:white;border-radius:var(--radius-lg);border:1px solid var(--gray-200)">
+          <h5 class="fw-700">Write a Review</h5>
+          <div class="mb-3">
+            <label class="form-label fw-600">Rating</label>
+            <div class="d-flex gap-2" id="starRating">
+              {% for i in range(1,6) %}<i class="fa fa-star fa-lg star-btn" data-val="{{ i }}" style="cursor:pointer;color:var(--gray-300)" onmouseover="hoverStar({{ i }})" onmouseout="resetStars()" onclick="selectStar({{ i }})"></i>{% endfor %}
+            </div>
+            <input type="hidden" id="selectedRating" value="5">
+          </div>
+          <textarea class="form-control mb-3" id="reviewComment" rows="3" placeholder="Share your experience..."></textarea>
+          <button class="btn-primary-main btn btn-sm" onclick="submitReview('{{ product._id }}')">Submit Review</button>
+        </div>
+        {% endif %}
+        {% if reviews %}
+        <div class="d-flex flex-column gap-3">
+          {% for r in reviews %}
+          <div class="p-4" style="background:white;border-radius:var(--radius-lg);border:1px solid var(--gray-200)">
+            <div class="d-flex justify-content-between align-items-start">
+              <div><div class="fw-700">{{ r.user_name or r.user_email }}</div>
+              <div class="stars">{% for i in range(1,6) %}<i class="fa fa-star {% if i > r.rating %}empty{% endif %}"></i>{% endfor %}</div></div>
+              <small class="text-muted">{{ r.created_at[:10] if r.created_at else '' }}</small>
+            </div>
+            <p class="mt-2 mb-0" style="font-size:0.9rem">{{ r.comment }}</p>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted"><i class="fa fa-comment fa-3x mb-3"></i><p>No reviews yet. Be the first!</p></div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Related Products -->
+  {% if related %}
+  <section class="mt-5">
+    <h3 class="fw-800 mb-4">Related Products</h3>
+    <div class="row g-4">
+      {% for p in related %}
+      <div class="col-sm-6 col-lg-3">{% include 'partials/product_card.html' %}</div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+let selectedRating = 5;
+function hoverStar(n) { document.querySelectorAll('.star-btn').forEach((s,i) => s.style.color = i < n ? '#f59e0b' : 'var(--gray-300)'); }
+function resetStars() { document.querySelectorAll('.star-btn').forEach((s,i) => s.style.color = i < selectedRating ? '#f59e0b' : 'var(--gray-300)'); }
+function selectStar(n) { selectedRating = n; document.getElementById('selectedRating').value = n; resetStars(); }
+resetStars();
+
+async function submitReview(productId) {
+  const rating = parseInt(document.getElementById('selectedRating').value);
+  const comment = document.getElementById('reviewComment').value.trim();
+  if (!comment) { Toast.show('Please write a comment', 'warning'); return; }
+  const res = await fetch('/api/reviews/submit', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({product_id: productId, rating, comment}) });
+  const data = await res.json();
+  if (res.ok) { Toast.show(data.message, 'success'); document.getElementById('reviewComment').value = ''; }
+  else { Toast.show(data.error || 'Failed', 'error'); }
+}
+
+async function downloadProduct(productId) {
+  const res = await fetch(`/api/download/${productId}`);
+  const data = await res.json();
+  if (res.ok) { window.open(data.url, '_blank'); Toast.show('Download started!', 'success'); }
+  else { Toast.show(data.error || 'Download failed', 'error'); }
+}
+</script>
+{% endblock %}

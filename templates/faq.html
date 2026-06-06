@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}FAQ - {{ site_settings.site_name | default('CodeForge Market') }}{% endblock %}
+{% block content %}
+<div class="container py-5" style="max-width:800px">
+  <div class="text-center mb-5">
+    <div class="section-badge mx-auto"><i class="fa fa-question-circle me-1"></i> FAQ</div>
+    <h2 class="fw-800">Frequently Asked Questions</h2>
+  </div>
+  <div class="accordion" id="faqAccordion">
+    {% set faqs = [
+      ('What is CodeForge Market?','CodeForge Market is a premium digital marketplace where you can buy Discord bot source codes, automation scripts, APIs, and other developer tools.'),
+      ('How do I download my purchased products?','After successful payment, go to My Orders or Downloads in your dashboard. Click the Download button next to your product.'),
+      ('What payment methods are accepted?','We accept all major credit/debit cards, UPI, net banking, and wallets through Razorpay.'),
+      ('Are the products ready to use?','Yes! All products come with setup documentation and are ready to deploy.'),
+      ('Can I request a custom Discord bot?','Yes! Visit our Custom Development page to submit your requirements and get a quote.'),
+      ('What is your refund policy?','Due to the digital nature of our products, all sales are final. Refunds may be issued in cases of product defects or non-delivery.'),
+      ('How do I contact support?','You can reach us via the Contact page, or join our Discord server for faster responses.'),
+      ('Do products receive updates?','Yes, major products receive periodic updates. Updated versions are available for re-download.'),
+    ] %}
+    {% for q, a in faqs %}
+    <div class="accordion-item mb-3 rounded-3 overflow-hidden" style="border:1px solid var(--gray-200)">
+      <h2 class="accordion-header">
+        <button class="accordion-button {% if not loop.first %}collapsed{% endif %} fw-600" type="button" data-bs-toggle="collapse" data-bs-target="#faq{{ loop.index }}" style="border-radius:0;font-size:0.95rem">{{ q }}</button>
+      </h2>
+      <div id="faq{{ loop.index }}" class="accordion-collapse collapse {% if loop.first %}show{% endif %}" data-bs-parent="#faqAccordion">
+        <div class="accordion-body text-muted" style="font-size:0.9rem">{{ a }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="text-center mt-5 p-4 rounded-3" style="background:var(--primary-light);border:1px solid rgba(37,99,235,0.15)">
+    <h5 class="fw-700 text-primary">Still have questions?</h5>
+    <p class="text-muted mb-3">Our support team is ready to help.</p>
+    <a href="/contact" class="btn-primary-main btn btn-sm">Contact Support</a>
+  </div>
+</div>
+{% endblock %}

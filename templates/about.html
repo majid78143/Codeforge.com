@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}About Us - {{ site_settings.site_name | default('CodeForge Market') }}{% endblock %}
+{% block content %}
+<section class="hero-section" style="padding:4rem 0 3rem">
+  <div class="container text-center position-relative">
+    <div class="hero-badge"><i class="fa fa-info-circle me-1"></i> About Us</div>
+    <h1>About <span>CodeForge Market</span></h1>
+    <p class="mx-auto" style="max-width:560px">The premier marketplace for premium Discord bots, automation scripts, and digital developer tools.</p>
+  </div>
+</section>
+<div class="container py-5">
+  <div class="row g-5 align-items-center mb-5">
+    <div class="col-lg-6">
+      <div class="section-badge mb-3"><i class="fa fa-star me-1"></i> Our Story</div>
+      <h2 class="fw-800">Built by Developers, for Developers</h2>
+      <p class="text-muted mt-3">CodeForge Market was founded with a simple mission: make professional-grade Discord bot source code accessible to everyone. Whether you're building your first bot or scaling a massive community, we have the tools you need.</p>
+      <p class="text-muted">Our curated marketplace features hand-vetted, production-ready source code from experienced developers, complete with documentation and support.</p>
+    </div>
+    <div class="col-lg-6">
+      <div class="row g-3">
+        {% for stat in [('500+','Products Available'),('10,000+','Happy Customers'),('99%','Customer Satisfaction'),('24/7','Developer Support')] %}
+        <div class="col-6">
+          <div class="stat-card text-center"><div class="stat-value text-primary">{{ stat[0] }}</div><div class="stat-label">{{ stat[1] }}</div></div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  <div class="row g-4 mb-5">
+    {% for item in [('fa-shield-alt','Quality Assured','Every product is manually reviewed for code quality and security before listing.'),('fa-download','Instant Delivery','Get immediate access to your purchases via secure download links.'),('fa-headset','Expert Support','Our team of developers is ready to help with any questions.'),('fa-sync','Regular Updates','Products are regularly updated to maintain compatibility.')] %}
+    <div class="col-md-6 col-lg-3">
+      <div class="text-center p-4 rounded-3" style="background:white;border:1px solid var(--gray-200);height:100%">
+        <div style="width:56px;height:56px;background:var(--primary-light);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem"><i class="fa {{ item[0] }} fa-xl text-primary"></i></div>
+        <h5 class="fw-700">{{ item[1] }}</h5>
+        <p class="text-muted mb-0" style="font-size:0.875rem">{{ item[2] }}</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

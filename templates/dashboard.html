@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - {{ site_settings.site_name | default('CodeForge Market') }}{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <div style="width:56px;height:56px;border-radius:50%;background:var(--primary);color:white;display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:800">{{ (current_user_name or current_user_email or 'U')[0].upper() }}</div>
+    <div><h4 class="fw-800 m-0">Welcome, {{ current_user_name or 'User' }}!</h4><p class="text-muted m-0" style="font-size:0.875rem">{{ current_user_email }}</p></div>
+  </div>
+  <!-- Stat Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+      <div class="stat-card"><div class="d-flex justify-content-between align-items-start"><div><div class="stat-label">Total Orders</div><div class="stat-value">{{ orders|length }}</div></div><div class="stat-icon" style="background:#eff6ff;color:#2563eb"><i class="fa fa-box"></i></div></div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="stat-card"><div class="d-flex justify-content-between align-items-start"><div><div class="stat-label">Downloads</div><div class="stat-value">{{ downloads|length }}</div></div><div class="stat-icon" style="background:#f0fdf4;color:#16a34a"><i class="fa fa-download"></i></div></div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="stat-card"><div class="d-flex justify-content-between align-items-start"><div><div class="stat-label">Wishlist</div><div class="stat-value">{{ wishlist_count }}</div></div><div class="stat-icon" style="background:#fff1f2;color:#dc2626"><i class="fa fa-heart"></i></div></div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="stat-card"><div class="d-flex justify-content-between align-items-start"><div><div class="stat-label">Notifications</div><div class="stat-value">{{ notif_count }}</div></div><div class="stat-icon" style="background:#faf5ff;color:#7c3aed"><i class="fa fa-bell"></i></div></div></div>
+    </div>
+  </div>
+  <!-- Quick Links -->
+  <div class="row g-3 mb-4">
+    {% for link in [('fa-box','My Orders','/orders','View all your orders','#eff6ff','#2563eb'),('fa-download','Downloads','/downloads','Access your files','#f0fdf4','#16a34a'),('fa-heart','Wishlist','/wishlist','Saved products','#fff1f2','#dc2626'),('fa-star','Reviews','/reviews','Your reviews','#fffbeb','#d97706'),('fa-user','Profile','/profile','Edit profile','#faf5ff','#7c3aed'),('fa-robot','Custom Dev','/custom-development','Request a bot','#f0fdfa','#0d9488')] %}
+    <div class="col-6 col-md-4 col-lg-2">
+      <a href="{{ link[2] }}" class="d-block text-center p-3 rounded-3 text-decoration-none" style="background:{{ link[4] }};transition:var(--transition);color:{{ link[5] }}" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='translateY(0)'">
+        <i class="fa {{ link[0] }} fa-xl mb-2"></i>
+        <div class="fw-700" style="font-size:0.8rem">{{ link[1] }}</div>
+        <div style="font-size:0.7rem;color:var(--gray-500)">{{ link[3] }}</div>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+  <!-- Recent Orders -->
+  {% if orders %}
+  <div class="checkout-section">
+    <div class="d-flex justify-content-between align-items-center mb-3"><h5 class="m-0">Recent Orders</h5><a href="/orders" class="text-primary" style="font-size:0.85rem">View All</a></div>
+    <div class="table-responsive">
+      <table class="table">
+        <thead><tr><th>Order ID</th><th>Items</th><th>Total</th><th>Status</th><th>Date</th></tr></thead>
+        <tbody>
+          {% for o in orders %}
+          <tr>
+            <td class="fw-600" style="font-size:0.85rem">{{ o.order_id }}</td>
+            <td style="font-size:0.85rem">{{ o.items|length }} item(s)</td>
+            <td class="fw-700 text-primary">₹{{ "%.2f"|format(o.total) }}</td>
+            <td><span class="badge {% if o.payment_status == 'paid' %}bg-success{% else %}bg-warning{% endif %}">{{ o.payment_status|title }}</span></td>
+            <td class="text-muted" style="font-size:0.8rem">{{ o.created_at[:10] if o.created_at else '-' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Cart - {{ site_settings.site_name | default('CodeForge Market') }}{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <h2 class="fw-800 mb-4">Shopping Cart <span class="text-muted fw-400" style="font-size:1rem">({{ items|length }} items)</span></h2>
+  {% if items %}
+  <div class="row g-4">
+    <div class="col-lg-8">
+      {% for item in items %}
+      <div class="checkout-section" id="cart-item-{{ item._id }}">
+        <div class="d-flex gap-3 align-items-start">
+          <img src="{{ item.thumbnail_image_url or 'https://placehold.co/80x60/e2e8f0/94a3b8?text=IMG' }}" style="width:80px;height:60px;object-fit:cover;border-radius:10px" alt="{{ item.title }}">
+          <div class="flex-grow-1">
+            <a href="/product/{{ item._id }}" class="fw-700 text-dark" style="font-size:0.95rem">{{ item.title }}</a>
+            <div class="text-muted mt-1" style="font-size:0.8rem">{{ item.category or 'General' }}</div>
+            <div class="d-flex align-items-center gap-3 mt-2">
+              <span class="fw-800" style="color:var(--primary)">₹{{ "%.0f"|format(item.discount_price or item.price) }}</span>
+              {% if item.discount_price %}<span class="text-muted text-decoration-line-through" style="font-size:0.85rem">₹{{ "%.0f"|format(item.price) }}</span>{% endif %}
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <div class="input-group" style="width:120px">
+              <button class="btn btn-outline-secondary btn-sm" onclick="updateQty('{{ item._id }}', {{ item.quantity - 1 }})">-</button>
+              <input type="number" class="form-control form-control-sm text-center" value="{{ item.quantity }}" min="1" onchange="updateQty('{{ item._id }}',this.value)" style="max-width:50px">
+              <button class="btn btn-outline-secondary btn-sm" onclick="updateQty('{{ item._id }}', {{ item.quantity + 1 }})">+</button>
+            </div>
+            <button class="btn btn-sm text-danger" onclick="removeItem('{{ item._id }}')"><i class="fa fa-trash"></i></button>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="col-lg-4">
+      <div class="checkout-section" style="position:sticky;top:80px">
+        <h5>Order Summary</h5>
+        <div class="order-summary-item"><span>Subtotal</span><span>₹{{ "%.2f"|format(subtotal) }}</span></div>
+        <div class="order-summary-item"><span>Discount</span><span class="text-success" id="discountLine">₹0.00</span></div>
+        <div class="order-summary-item order-summary-total mt-2"><span>Total</span><span id="cartTotal">₹{{ "%.2f"|format(subtotal) }}</span></div>
+        <a href="/checkout" class="btn-primary-main btn w-100 mt-4">Proceed to Checkout <i class="fa fa-arrow-right ms-1"></i></a>
+        <a href="/marketplace" class="btn btn-link w-100 mt-2 text-muted" style="font-size:0.875rem">Continue Shopping</a>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="text-center py-5">
+    <div style="font-size:5rem;margin-bottom:1.5rem">🛒</div>
+    <h3 class="fw-800">Your cart is empty</h3>
+    <p class="text-muted mb-4">Explore our marketplace and find something you like!</p>
+    <a href="/marketplace" class="btn-primary-main btn">Browse Marketplace</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+async function removeItem(productId) {
+  const ok = await Cart.remove(productId);
+  if (ok) { document.getElementById(`cart-item-${productId}`).remove(); Toast.show('Removed from cart','info'); location.reload(); }
+}
+async function updateQty(productId, qty) {
+  if (qty < 1) { removeItem(productId); return; }
+  await Cart.update(productId, parseInt(qty));
+  location.reload();
+}
+</script>
+{% endblock %}

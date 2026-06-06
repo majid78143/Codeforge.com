@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}{{ site_settings.site_name | default('CodeForge Market') }} - Premium Discord Bots & Automation Tools{% endblock %}
+{% block content %}
+<!-- Hero -->
+<section class="hero-section">
+  <div class="container position-relative">
+    <div class="row align-items-center">
+      <div class="col-lg-7">
+        <div class="hero-badge"><i class="fa fa-bolt"></i> Premium Digital Marketplace</div>
+        <h1>{{ site_settings.homepage_hero_title | default('Premium Discord Bots') }}<br><span>& Automation Tools</span></h1>
+        <p>{{ site_settings.homepage_hero_subtitle | default('Professional-grade bots, scripts and tools for Discord servers') }}</p>
+        <div class="d-flex flex-wrap gap-3">
+          <a href="/marketplace" class="btn-primary-main btn">{{ site_settings.homepage_hero_cta | default('Browse Marketplace') }} <i class="fa fa-arrow-right ms-1"></i></a>
+          <a href="/custom-development" class="btn-outline-main btn" style="color:#94a3b8;border-color:#334155">Custom Development</a>
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat"><div class="value">500+</div><div class="label">Products</div></div>
+          <div class="hero-stat"><div class="value">10K+</div><div class="label">Customers</div></div>
+          <div class="hero-stat"><div class="value">4.9★</div><div class="label">Avg Rating</div></div>
+          <div class="hero-stat"><div class="value">24/7</div><div class="label">Support</div></div>
+        </div>
+      </div>
+      <div class="col-lg-5 d-none d-lg-block text-center mt-4 mt-lg-0">
+        <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:2rem">
+          <div class="d-flex flex-wrap gap-2 justify-content-center">
+            {% for tag in ['Discord Bots','Automation','Scripts','APIs','Premium Tools','Templates','Custom Dev','Source Code'] %}
+            <span style="background:rgba(37,99,235,0.15);border:1px solid rgba(37,99,235,0.25);color:#93c5fd;font-size:0.8rem;font-weight:600;padding:0.4rem 0.9rem;border-radius:50px">{{ tag }}</span>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Categories -->
+{% if categories %}
+<section class="py-5">
+  <div class="container">
+    <div class="section-header text-center reveal">
+      <div class="section-badge"><i class="fa fa-th me-1"></i> Categories</div>
+      <h2>Browse by Category</h2>
+    </div>
+    <div class="row g-3 justify-content-center">
+      {% for cat in categories %}
+      <div class="col-6 col-md-4 col-lg-2 reveal reveal-delay-{{ loop.index }}">
+        <a href="/marketplace?category={{ cat.slug }}" class="d-block text-center p-3 rounded-3" style="background:white;border:1px solid var(--gray-200);transition:var(--transition);color:var(--gray-700)" onmouseover="this.style.borderColor='var(--primary)';this.style.color='var(--primary)'" onmouseout="this.style.borderColor='var(--gray-200)';this.style.color='var(--gray-700)'">
+          <div style="font-size:2rem;margin-bottom:0.4rem">{{ cat.icon | default('📦') }}</div>
+          <div style="font-size:0.8rem;font-weight:700">{{ cat.name }}</div>
+        </a>
+      </div>
+      {% endfor %}
+      <div class="col-6 col-md-4 col-lg-2 reveal">
+        <a href="/marketplace" class="d-block text-center p-3 rounded-3" style="background:var(--primary);border:1px solid var(--primary);color:white">
+          <div style="font-size:2rem;margin-bottom:0.4rem"><i class="fa fa-grid"></i>🔍</div>
+          <div style="font-size:0.8rem;font-weight:700">All Products</div>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- Featured Products -->
+{% if featured %}
+<section class="py-5" style="background:white">
+  <div class="container">
+    <div class="section-header d-flex align-items-end justify-content-between reveal">
+      <div>
+        <div class="section-badge"><i class="fa fa-star me-1"></i> Featured</div>
+        <h2>Featured Products</h2>
+      </div>
+      <a href="/marketplace?tag=featured" class="btn-outline-main btn btn-sm">View All</a>
+    </div>
+    <div class="row g-4">
+      {% for p in featured %}
+      <div class="col-sm-6 col-lg-4 reveal reveal-delay-{{ loop.index }}">
+        {% include 'partials/product_card.html' %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- Trending -->
+{% if trending %}
+<section class="py-5">
+  <div class="container">
+    <div class="section-header d-flex align-items-end justify-content-between reveal">
+      <div>
+        <div class="section-badge"><i class="fa fa-fire me-1"></i> Trending</div>
+        <h2>Trending Now</h2>
+      </div>
+      <a href="/marketplace?tag=trending" class="btn-outline-main btn btn-sm">View All</a>
+    </div>
+    <div class="row g-4">
+      {% for p in trending %}
+      <div class="col-sm-6 col-lg-3 reveal reveal-delay-{{ loop.index }}">
+        {% include 'partials/product_card.html' %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- New Arrivals -->
+{% if new_arrivals %}
+<section class="py-5" style="background:white">
+  <div class="container">
+    <div class="section-header d-flex align-items-end justify-content-between reveal">
+      <div>
+        <div class="section-badge"><i class="fa fa-sparkles me-1"></i> New</div>
+        <h2>New Arrivals</h2>
+      </div>
+      <a href="/marketplace?sort=latest" class="btn-outline-main btn btn-sm">View All</a>
+    </div>
+    <div class="row g-4">
+      {% for p in new_arrivals %}
+      <div class="col-sm-6 col-lg-3 reveal reveal-delay-{{ loop.index }}">
+        {% include 'partials/product_card.html' %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- CTA Banner -->
+<section class="py-5" style="background:linear-gradient(135deg,#0f172a,#1e1b4b)">
+  <div class="container text-center text-white reveal">
+    <h2 class="fw-900 mb-3" style="letter-spacing:-0.5px">Need a Custom Discord Bot?</h2>
+    <p style="color:#94a3b8;max-width:500px;margin:0 auto 2rem">Tell us your requirements and our developers will build exactly what you need.</p>
+    <a href="/custom-development" class="btn-primary-main btn">Request Custom Bot <i class="fa fa-arrow-right ms-1"></i></a>
+  </div>
+</section>
+{% endblock %}

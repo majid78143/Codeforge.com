@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Checkout - {{ site_settings.site_name | default('CodeForge Market') }}{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <h2 class="fw-800 mb-4">Checkout</h2>
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <!-- Items -->
+      <div class="checkout-section">
+        <h5>Order Items</h5>
+        {% for item in items %}
+        <div class="d-flex gap-3 align-items-center mb-3 {% if not loop.last %}pb-3 border-bottom{% endif %}">
+          <img src="{{ item.thumbnail_image_url or 'https://placehold.co/60x45' }}" style="width:60px;height:45px;object-fit:cover;border-radius:8px" alt="{{ item.title }}">
+          <div class="flex-grow-1">
+            <div class="fw-700" style="font-size:0.9rem">{{ item.title }}</div>
+            <div class="text-muted" style="font-size:0.8rem">Qty: {{ item.quantity }}</div>
+          </div>
+          <div class="fw-700 text-primary">₹{{ "%.0f"|format((item.discount_price or item.price) * item.quantity) }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      <!-- Coupon -->
+      <div class="checkout-section">
+        <h5>Coupon Code</h5>
+        <div class="d-flex gap-2">
+          <input type="text" class="form-control" id="couponInput" placeholder="Enter coupon code" style="border-radius:10px;text-transform:uppercase">
+          <button class="btn btn-outline-primary fw-600" onclick="applyCoupon()" style="border-radius:10px;white-space:nowrap">Apply</button>
+        </div>
+        <div id="couponMsg" class="mt-2" style="font-size:0.85rem"></div>
+      </div>
+    </div>
+    <!-- Order Summary -->
+    <div class="col-lg-4">
+      <div class="checkout-section" style="position:sticky;top:80px">
+        <h5>Order Summary</h5>
+        <div class="order-summary-item"><span>Subtotal</span><span>₹{{ "%.2f"|format(subtotal) }}</span></div>
+        {% if tax > 0 %}<div class="order-summary-item"><span>Tax ({{ settings.tax_percent|default(0) }}%)</span><span>₹{{ "%.2f"|format(tax) }}</span></div>{% endif %}
+        <div class="order-summary-item"><span>Discount</span><span class="text-success" id="discountDisplay">₹0.00</span></div>
+        <div class="order-summary-item order-summary-total mt-2 pt-2 border-top"><span>Total</span><span id="totalDisplay">₹{{ "%.2f"|format(total) }}</span></div>
+        <button class="btn-primary-main btn w-100 mt-4" onclick="initiatePayment()" id="payBtn">
+          <i class="fa fa-lock me-2"></i>Pay Securely with Razorpay
+        </button>
+        <div class="text-center mt-3 d-flex align-items-center justify-content-center gap-2" style="color:var(--gray-400);font-size:0.78rem">
+          <i class="fa fa-shield"></i> 256-bit SSL encryption &bull; <i class="fab fa-cc-visa"></i><i class="fab fa-cc-mastercard ms-1"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+{% endblock %}
+{% block extra_js %}
+<script>
+let appliedDiscount = 0;
+let appliedCoupon = '';
+const subtotal = {{ subtotal }};
+const tax = {{ tax }};
+
+async function applyCoupon() {
+  const code = document.getElementById('couponInput').value.trim().toUpperCase();
+  if (!code) return;
+  const orderTotal = subtotal + tax;
+  const res = await fetch('/api/coupon/validate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({coupon_code: code, order_total: orderTotal}) });
+  const data = await res.json();
+  const msg = document.getElementById('couponMsg');
+  if (data.valid) {
+    appliedDiscount = data.discount;
+    appliedCoupon = code;
+    msg.innerHTML = `<span class="text-success fw-600"><i class="fa fa-check-circle me-1"></i>${data.message}</span>`;
+    document.getElementById('discountDisplay').textContent = `-₹${data.discount.toFixed(2)}`;
+    document.getElementById('totalDisplay').textContent = `₹${(orderTotal - data.discount).toFixed(2)}`;
+  } else {
+    appliedDiscount = 0; appliedCoupon = '';
+    msg.innerHTML = `<span class="text-danger"><i class="fa fa-times-circle me-1"></i>${data.message}</span>`;
+  }
+}
+
+async function initiatePayment() {
+  const btn = document.getElementById('payBtn');
+  btn.disabled = true; btn.textContent = 'Creating order...';
+  try {
+    const res = await fetch('/api/payment/create-order', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({coupon_code: appliedCoupon}) });
+    const order = await res.json();
+    if (!res.ok) { Toast.show(order.error || 'Payment init failed', 'error'); btn.disabled=false; btn.innerHTML='<i class="fa fa-lock me-2"></i>Pay Securely with Razorpay'; return; }
+    const rzp = new Razorpay({
+      key: order.key_id,
+      amount: order.amount,
+      currency: order.currency,
+      order_id: order.order_id,
+      name: '{{ site_settings.site_name | default("CodeForge Market") }}',
+      description: 'Digital Product Purchase',
+      prefill: order.prefill,
+      theme: { color: '#2563eb' },
+      handler: async function(response) {
+        btn.textContent = 'Verifying...';
+        const vres = await fetch('/api/payment/verify', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(response) });
+        const vdata = await vres.json();
+        if (vdata.status === 'ok') { window.location.href = `/order-success/${vdata.order_id}`; }
+        else { Toast.show('Payment verification failed', 'error'); btn.disabled=false; btn.innerHTML='<i class="fa fa-lock me-2"></i>Pay Securely with Razorpay'; }
+      },
+      modal: { ondismiss: () => { btn.disabled=false; btn.innerHTML='<i class="fa fa-lock me-2"></i>Pay Securely with Razorpay'; } }
+    });
+    rzp.open();
+  } catch(e) { Toast.show('Network error', 'error'); btn.disabled=false; btn.innerHTML='<i class="fa fa-lock me-2"></i>Pay Securely with Razorpay'; }
+}
+</script>
+{% endblock %}

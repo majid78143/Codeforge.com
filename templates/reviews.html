@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}My Reviews - {{ site_settings.site_name | default('CodeForge Market') }}{% endblock %}
+{% block content %}
+<div class="container py-5" style="max-width:800px">
+  <h2 class="fw-800 mb-4">My Reviews</h2>
+  {% if reviews %}
+  <div class="d-flex flex-column gap-3">
+    {% for r in reviews %}
+    <div class="checkout-section">
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <div class="fw-700">Product ID: {{ r.product_id }}</div>
+        <span class="badge {% if r.approved %}bg-success{% else %}bg-warning text-dark{% endif %}">{% if r.approved %}Approved{% else %}Pending{% endif %}</span>
+      </div>
+      <div class="stars mb-2">{% for i in range(1,6) %}<i class="fa fa-star {% if i > r.rating %}empty{% endif %}"></i>{% endfor %}</div>
+      <p class="mb-1" style="font-size:0.9rem">{{ r.comment }}</p>
+      <div class="text-muted" style="font-size:0.75rem">{{ r.created_at[:10] if r.created_at else '' }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center py-5"><i class="fa fa-star fa-3x text-muted mb-3"></i><h4 class="fw-700">No reviews yet</h4><p class="text-muted">Purchase products and share your experience!</p><a href="/marketplace" class="btn-primary-main btn mt-2">Browse Marketplace</a></div>
+  {% endif %}
+</div>
+{% endblock %}

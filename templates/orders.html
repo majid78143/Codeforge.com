@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}My Orders - {{ site_settings.site_name | default('CodeForge Market') }}{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <h2 class="fw-800 mb-4">My Orders</h2>
+  {% if orders %}
+  <div class="d-flex flex-column gap-4">
+    {% for o in orders %}
+    <div class="checkout-section">
+      <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+        <div>
+          <div class="fw-700">Order #{{ o.order_id }}</div>
+          <div class="text-muted" style="font-size:0.85rem">{{ o.created_at[:10] if o.created_at else '-' }}</div>
+        </div>
+        <div class="text-end">
+          <span class="badge {% if o.payment_status == 'paid' %}bg-success{% elif o.payment_status == 'pending' %}bg-warning text-dark{% else %}bg-danger{% endif %} mb-1">{{ o.payment_status|title }}</span>
+          <div class="fw-800 text-primary">₹{{ "%.2f"|format(o.total) }}</div>
+        </div>
+      </div>
+      <div class="d-flex flex-column gap-2">
+        {% for item in o.items %}
+        <div class="d-flex gap-3 align-items-center p-2 rounded-2" style="background:var(--gray-50)">
+          <img src="{{ item.thumbnail_image_url or 'https://placehold.co/50x38' }}" style="width:50px;height:38px;object-fit:cover;border-radius:6px" alt="{{ item.title }}">
+          <div class="flex-grow-1">
+            <div class="fw-600" style="font-size:0.875rem">{{ item.title }}</div>
+            <div class="text-muted" style="font-size:0.75rem">Qty: {{ item.quantity }}</div>
+          </div>
+          {% if o.payment_status == 'paid' %}
+          <button class="btn btn-sm btn-outline-primary" onclick="downloadFile('{{ item._id }}')" style="border-radius:8px;font-size:0.8rem"><i class="fa fa-download me-1"></i>Download</button>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% include 'partials/pagination.html' %}
+  {% else %}
+  <div class="text-center py-5"><div style="font-size:4rem;margin-bottom:1rem">📦</div><h4 class="fw-700">No orders yet</h4><p class="text-muted mb-4">Browse our marketplace and make your first purchase!</p><a href="/marketplace" class="btn-primary-main btn">Browse Marketplace</a></div>
+  {% endif %}
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+async function downloadFile(productId) {
+  const res = await fetch(`/api/download/${productId}`);
+  const data = await res.json();
+  if (res.ok) { window.open(data.url, '_blank'); Toast.show('Download started!', 'success'); }
+  else Toast.show(data.error || 'Download unavailable', 'error');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}{{ site_settings.seo_title | default('CodeForge Market') }}{% endblock %}</title>
+  <meta name="description" content="{% block meta_desc %}{{ site_settings.seo_description | default('') }}{% endblock %}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/main.css') }}" rel="stylesheet">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+{% if site_settings.announcement_active and site_settings.announcement %}
+<div class="announcement-bar">{{ site_settings.announcement }}</div>
+{% endif %}
+
+<!-- Navbar -->
+<nav class="navbar-main">
+  <div class="container">
+    <div class="d-flex align-items-center justify-content-between w-100 gap-3">
+      <a class="navbar-brand" href="/">{{ site_settings.site_name | default('CodeForge Market') }}</a>
+      <!-- Search -->
+      <div class="search-wrapper d-none d-md-block">
+        <i class="fa fa-search search-icon"></i>
+        <input type="text" id="globalSearch" placeholder="Search products..." autocomplete="off">
+        <div class="search-dropdown" id="searchDropdown"></div>
+      </div>
+      <!-- Nav Links -->
+      <div class="d-none d-lg-flex align-items-center gap-1">
+        <a class="nav-link-main" href="/">Home</a>
+        <a class="nav-link-main" href="/marketplace">Marketplace</a>
+        <a class="nav-link-main" href="/custom-development">Custom Dev</a>
+      </div>
+      <!-- Right Actions -->
+      <div class="d-flex align-items-center gap-2">
+        {% if current_user_email %}
+        <a href="/cart" class="btn btn-link position-relative p-2" style="color:var(--gray-700)">
+          <i class="fa fa-shopping-cart fa-lg"></i>
+          <span class="cart-count-badge cart-badge {% if cart_count == 0 %}d-none{% endif %}">{{ cart_count }}</span>
+        </a>
+        <a href="/notifications" class="btn btn-link position-relative p-2" style="color:var(--gray-700)">
+          <i class="fa fa-bell fa-lg"></i>
+          {% if notif_count > 0 %}<span class="cart-badge" style="top:-4px;right:-4px">{{ notif_count }}</span>{% endif %}
+        </a>
+        <div class="dropdown">
+          <button class="btn btn-link d-flex align-items-center gap-2 p-0" data-bs-toggle="dropdown" style="color:var(--gray-700);text-decoration:none">
+            {% if current_user_photo %}<img src="{{ current_user_photo }}" class="rounded-circle" width="32" height="32" style="object-fit:cover">{% else %}<div style="width:32px;height:32px;border-radius:50%;background:var(--primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem">{{ (current_user_name or current_user_email or 'U')[0].upper() }}</div>{% endif %}
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end" style="border-radius:12px;border:1px solid var(--gray-200);box-shadow:var(--shadow-lg);min-width:180px">
+            <li><span class="dropdown-item-text fw-600 text-truncate" style="max-width:160px;font-size:0.8rem;color:var(--gray-500)">{{ current_user_email }}</span></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="/dashboard"><i class="fa fa-th-large me-2 text-primary"></i>Dashboard</a></li>
+            <li><a class="dropdown-item" href="/orders"><i class="fa fa-box me-2 text-primary"></i>My Orders</a></li>
+            <li><a class="dropdown-item" href="/downloads"><i class="fa fa-download me-2 text-primary"></i>Downloads</a></li>
+            <li><a class="dropdown-item" href="/wishlist"><i class="fa fa-heart me-2 text-primary"></i>Wishlist</a></li>
+            <li><a class="dropdown-item" href="/profile"><i class="fa fa-user me-2 text-primary"></i>Profile</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><button class="dropdown-item text-danger" onclick="firebaseLogout()"><i class="fa fa-sign-out-alt me-2"></i>Logout</button></li>
+          </ul>
+        </div>
+        {% else %}
+        <a href="/login" class="nav-link-main">Login</a>
+        <a href="/register" class="btn-nav-primary btn">Get Started</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</nav>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="container mt-3">
+  {% for cat, msg in messages %}
+  <div class="alert alert-{{ cat }} alert-dismissible fade show" role="alert">{{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+
+{% block content %}{% endblock %}
+
+<!-- Footer -->
+<footer class="footer-main mt-5">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <div class="footer-brand mb-2">{{ site_settings.site_name | default('CodeForge Market') }}</div>
+        <p style="font-size:0.875rem;max-width:280px">{{ site_settings.site_tagline | default('Premium Discord Bots & Automation Tools') }}</p>
+        <div class="d-flex gap-3 mt-3">
+          <a href="#" style="color:#475569;font-size:1.1rem"><i class="fab fa-discord"></i></a>
+          <a href="#" style="color:#475569;font-size:1.1rem"><i class="fab fa-twitter"></i></a>
+          <a href="#" style="color:#475569;font-size:1.1rem"><i class="fab fa-github"></i></a>
+        </div>
+      </div>
+      <div class="col-6 col-lg-2">
+        <h5>Marketplace</h5>
+        <a class="footer-link" href="/marketplace">All Products</a>
+        <a class="footer-link" href="/marketplace?tag=featured">Featured</a>
+        <a class="footer-link" href="/marketplace?tag=trending">Trending</a>
+        <a class="footer-link" href="/custom-development">Custom Dev</a>
+      </div>
+      <div class="col-6 col-lg-2">
+        <h5>Account</h5>
+        <a class="footer-link" href="/dashboard">Dashboard</a>
+        <a class="footer-link" href="/orders">My Orders</a>
+        <a class="footer-link" href="/downloads">Downloads</a>
+        <a class="footer-link" href="/wishlist">Wishlist</a>
+      </div>
+      <div class="col-6 col-lg-2">
+        <h5>Company</h5>
+        <a class="footer-link" href="/about">About Us</a>
+        <a class="footer-link" href="/contact">Contact</a>
+        <a class="footer-link" href="/faq">FAQ</a>
+      </div>
+      <div class="col-6 col-lg-2">
+        <h5>Legal</h5>
+        <a class="footer-link" href="/privacy-policy">Privacy Policy</a>
+        <a class="footer-link" href="/terms-and-conditions">Terms</a>
+        <a class="footer-link" href="/refund-policy">Refund Policy</a>
+        <a class="footer-link" href="/license-agreement">License</a>
+        <a class="footer-link" href="/support-policy">Support</a>
+      </div>
+    </div>
+    <hr class="footer-divider">
+    <div class="d-flex flex-wrap justify-content-between align-items-center footer-bottom">
+      <span>&copy; {{ 2024 }} {{ site_settings.site_name | default('CodeForge Market') }}. All rights reserved.</span>
+      <span>Made with <i class="fa fa-heart text-danger"></i> for developers</span>
+    </div>
+  </div>
+</footer>
+
+<script>window.FIREBASE_CONFIG = {{ firebase_config | tojson }};</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script type="module" src="{{ url_for('static', filename='js/firebase-auth.js') }}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

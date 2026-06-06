@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Register - {{ site_settings.site_name | default('CodeForge Market') }}{% endblock %}
+{% block content %}
+<div class="min-vh-100 d-flex align-items-center py-5" style="background:linear-gradient(135deg,#f8fafc,#eff6ff)">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-9 col-lg-6 col-xl-5">
+        <div class="glass-card p-4 p-md-5">
+          <div class="text-center mb-4">
+            <a href="/" class="fw-900" style="font-size:1.5rem;background:linear-gradient(135deg,var(--primary),var(--secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-decoration:none">{{ site_settings.site_name | default('CodeForge Market') }}</a>
+            <h2 class="fw-800 mt-3 mb-1">Create Account</h2>
+            <p class="text-muted">Join thousands of developers</p>
+          </div>
+          <button class="btn w-100 mb-4 d-flex align-items-center justify-content-center gap-2 fw-600" style="border:1.5px solid var(--gray-200);border-radius:12px;padding:0.75rem;background:white" onclick="handleGoogleRegister()">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" height="18" alt="Google"> Continue with Google
+          </button>
+          <div class="d-flex align-items-center gap-3 mb-4"><hr class="flex-grow-1 m-0"><span class="text-muted" style="font-size:0.8rem">or register with email</span><hr class="flex-grow-1 m-0"></div>
+          <div id="regError" class="alert alert-danger d-none mb-3"></div>
+          <form id="regForm" onsubmit="handleRegister(event)">
+            <div class="mb-3">
+              <label class="form-label fw-600">Full Name</label>
+              <input type="text" class="form-control" id="regName" placeholder="Your full name" required style="border-radius:10px;padding:0.7rem 1rem">
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-600">Email Address</label>
+              <input type="email" class="form-control" id="regEmail" placeholder="you@example.com" required style="border-radius:10px;padding:0.7rem 1rem">
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-600">Password</label>
+              <input type="password" class="form-control" id="regPassword" placeholder="Min 8 characters" minlength="8" required style="border-radius:10px;padding:0.7rem 1rem">
+              <div class="form-text">At least 8 characters</div>
+            </div>
+            <div class="mb-4">
+              <label class="form-label fw-600">Confirm Password</label>
+              <input type="password" class="form-control" id="regConfirm" placeholder="Repeat password" required style="border-radius:10px;padding:0.7rem 1rem">
+            </div>
+            <div class="mb-4 form-check">
+              <input type="checkbox" class="form-check-input" id="agreeTerms" required>
+              <label class="form-check-label" style="font-size:0.85rem">I agree to the <a href="/terms-and-conditions">Terms</a> and <a href="/privacy-policy">Privacy Policy</a></label>
+            </div>
+            <button type="submit" class="btn-primary-main btn w-100 py-2" id="regBtn">Create Account</button>
+          </form>
+          <p class="text-center mt-4 text-muted" style="font-size:0.875rem">Already have an account? <a href="/login" class="fw-700">Sign in</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+const app = initializeApp(window.FIREBASE_CONFIG);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+
+async function syncAndRedirect(user) {
+  const res = await fetch('/api/auth/sync', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({email:user.email,displayName:user.displayName||user.email.split('@')[0],photoURL:user.photoURL||'',uid:user.uid}) });
+  const data = await res.json();
+  if (data.redirect) window.location.href = data.redirect;
+}
+
+window.handleRegister = async function(e) {
+  e.preventDefault();
+  const err = document.getElementById('regError');
+  err.classList.add('d-none');
+  const name = document.getElementById('regName').value.trim();
+  const email = document.getElementById('regEmail').value;
+  const pass = document.getElementById('regPassword').value;
+  const confirm = document.getElementById('regConfirm').value;
+  if (pass !== confirm) { err.textContent = 'Passwords do not match'; err.classList.remove('d-none'); return; }
+  const btn = document.getElementById('regBtn');
+  btn.disabled = true; btn.textContent = 'Creating account...';
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    await updateProfile(cred.user, { displayName: name });
+    await syncAndRedirect(cred.user);
+  } catch(ex) {
+    const msgs = {'auth/email-already-in-use':'An account with this email already exists.','auth/weak-password':'Password must be at least 6 characters.','auth/invalid-email':'Invalid email address.'};
+    err.textContent = msgs[ex.code] || ex.message;
+    err.classList.remove('d-none');
+    btn.disabled = false; btn.textContent = 'Create Account';
+  }
+};
+
+window.handleGoogleRegister = async function() {
+  try {
+    const result = await signInWithPopup(auth, provider);
+    await syncAndRedirect(result.user);
+  } catch(ex) { if(ex.code !== 'auth/popup-closed-by-user') Toast.show('Google sign-in failed','error'); }
+};
+</script>
+{% endblock %}

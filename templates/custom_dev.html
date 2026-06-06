@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Custom Development - {{ site_settings.site_name | default('CodeForge Market') }}{% endblock %}
+{% block content %}
+<section class="hero-section" style="padding:4rem 0 3rem">
+  <div class="container text-center position-relative">
+    <div class="hero-badge"><i class="fa fa-robot me-1"></i> Custom Development</div>
+    <h1>Custom Discord Bot Development</h1>
+    <p class="mx-auto" style="max-width:560px">Tell us your exact requirements — our expert team will build the perfect Discord bot or automation tool for you.</p>
+  </div>
+</section>
+<div class="container py-5" style="max-width:800px">
+  <div class="row g-4 mb-5">
+    {% for item in [('fa-code','Custom Built','100% tailored to your server'),('fa-bolt','Fast Delivery','24-72 hour turnaround'),('fa-shield','Secure','Production-ready code'),('fa-headset','Support','30 days free support')] %}
+    <div class="col-6 col-md-3 text-center">
+      <div class="p-3 rounded-3" style="background:var(--primary-light)"><i class="fa {{ item[0] }} fa-xl text-primary mb-2"></i><div class="fw-700 small">{{ item[1] }}</div><div class="text-muted" style="font-size:0.75rem">{{ item[2] }}</div></div>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="checkout-section">
+    <h3 class="fw-800 mb-4">Submit Your Request</h3>
+    <div id="customSuccess" class="alert alert-success d-none"><i class="fa fa-check-circle me-2"></i>Your request has been submitted! We'll get back to you soon.</div>
+    <form id="customForm" onsubmit="submitCustomOrder(event)">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label fw-600">Discord Username <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" name="discord_username" placeholder="username#0000" required style="border-radius:10px;padding:0.7rem 1rem">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-600">Project Name <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" name="project_name" placeholder="My Discord Bot" required style="border-radius:10px;padding:0.7rem 1rem">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-600">Bot Type <span class="text-danger">*</span></label>
+          <select class="form-select" name="bot_type" required style="border-radius:10px;padding:0.7rem 1rem">
+            <option value="">Select bot type</option>
+            <option>Moderation Bot</option><option>Music Bot</option><option>Economy Bot</option>
+            <option>Ticket System</option><option>Leveling Bot</option><option>Giveaway Bot</option>
+            <option>Auto-moderation Bot</option><option>Utility Bot</option><option>Custom/Other</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-600">Budget (₹) <span class="text-danger">*</span></label>
+          <select class="form-select" name="budget" required style="border-radius:10px;padding:0.7rem 1rem">
+            <option value="">Select budget range</option>
+            <option>₹500 - ₹1,000</option><option>₹1,000 - ₹3,000</option>
+            <option>₹3,000 - ₹7,000</option><option>₹7,000 - ₹15,000</option><option>₹15,000+</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-600">Delivery Time <span class="text-danger">*</span></label>
+          <select class="form-select" name="delivery_time" required style="border-radius:10px;padding:0.7rem 1rem">
+            <option value="">Select timeframe</option>
+            <option>24 hours</option><option>48 hours</option><option>3-5 days</option>
+            <option>1 week</option><option>2 weeks</option><option>No rush</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-600">Reference Links</label>
+          <input type="text" class="form-control" name="reference_links" placeholder="GitHub, Discord server, etc." style="border-radius:10px;padding:0.7rem 1rem">
+        </div>
+        <div class="col-12">
+          <label class="form-label fw-600">Required Features <span class="text-danger">*</span></label>
+          <textarea class="form-control" name="required_features" rows="5" required placeholder="Describe all the features you need in detail. Be as specific as possible to get an accurate quote." style="border-radius:10px;padding:0.75rem 1rem"></textarea>
+        </div>
+      </div>
+      <div class="mt-4 d-flex gap-3">
+        <button type="submit" class="btn-primary-main btn" id="submitCustomBtn">Submit Request <i class="fa fa-arrow-right ms-1"></i></button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+async function submitCustomOrder(e) {
+  e.preventDefault();
+  if (!window.current_user_email) { window.location.href = '/login'; return; }
+  const btn = document.getElementById('submitCustomBtn');
+  btn.disabled = true; btn.textContent = 'Submitting...';
+  const data = Object.fromEntries(new FormData(e.target));
+  const res = await fetch('/custom-development', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) });
+  const result = await res.json();
+  if (res.ok) {
+    document.getElementById('customSuccess').classList.remove('d-none');
+    e.target.reset();
+    Toast.show(result.message, 'success');
+  } else Toast.show(result.error || 'Submission failed', 'error');
+  btn.disabled = false; btn.innerHTML = 'Submit Request <i class="fa fa-arrow-right ms-1"></i>';
+}
+window.current_user_email = {{ current_user_email | tojson }};
+</script>
+{% endblock %}

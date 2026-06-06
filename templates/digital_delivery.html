@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Digital Delivery Policy - {{ site_settings.site_name | default('CodeForge Market') }}{% endblock %}
+{% block content %}
+<div class="container py-5" style="max-width:800px">
+  <h1 class="fw-800 mb-2">Digital Delivery Policy</h1>
+  <p class="text-muted mb-4">Last updated: January 1, 2025</p>
+  <div class="checkout-section">
+    <p>All products are delivered digitally via secure download links. Downloads are available immediately after successful payment.</p>
+    <p>For any questions regarding this policy, please contact us at <a href="mailto:{{ site_settings.contact_email | default('support@codeforgemarket.com') }}">{{ site_settings.contact_email | default('support@codeforgemarket.com') }}</a>.</p>
+  </div>
+</div>
+{% endblock %}

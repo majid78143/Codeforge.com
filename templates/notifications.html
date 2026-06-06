@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Notifications - {{ site_settings.site_name | default('CodeForge Market') }}{% endblock %}
+{% block content %}
+<div class="container py-5" style="max-width:700px">
+  <h2 class="fw-800 mb-4">Notifications</h2>
+  {% if notifications %}
+  <div class="d-flex flex-column gap-3">
+    {% for n in notifications %}
+    <div class="checkout-section" style="{% if not n.read %}border-left:3px solid var(--primary);{% endif %}">
+      <div class="d-flex gap-3 align-items-start">
+        <div style="width:40px;height:40px;border-radius:50%;background:{% if n.type=='success' %}#f0fdf4;color:#16a34a{% elif n.type=='error' %}#fff1f2;color:#dc2626{% elif n.type=='warning' %}#fffbeb;color:#d97706{% else %}#eff6ff;color:#2563eb{% endif %};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <i class="fa {% if n.type=='success' %}fa-check{% elif n.type=='error' %}fa-times{% elif n.type=='warning' %}fa-exclamation{% else %}fa-info{% endif %}"></i>
+        </div>
+        <div class="flex-grow-1">
+          <div class="fw-700" style="font-size:0.9rem">{{ n.title }}</div>
+          <div class="text-muted" style="font-size:0.85rem">{{ n.message }}</div>
+        </div>
+        <div class="text-muted" style="font-size:0.75rem;white-space:nowrap">{{ n.created_at[:16].replace('T',' ') if n.created_at else '-' }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center py-5"><i class="fa fa-bell fa-3x text-muted mb-3"></i><h4 class="fw-700">No notifications</h4><p class="text-muted">You're all caught up!</p></div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Contact Us - {{ site_settings.site_name | default('CodeForge Market') }}{% endblock %}
+{% block content %}
+<div class="container py-5" style="max-width:800px">
+  <div class="text-center mb-5">
+    <div class="section-badge mx-auto"><i class="fa fa-envelope me-1"></i> Contact</div>
+    <h2 class="fw-800">Get In Touch</h2>
+    <p class="text-muted">Have a question? We're here to help.</p>
+  </div>
+  <div class="row g-4">
+    <div class="col-md-4">
+      <div class="d-flex flex-column gap-3">
+        {% for c in [('fa-envelope','Email','mdmajidansari33640@gmail.com'),('fa-discord','Discord','discord.gg/codeforge'),('fa-clock','Hours','Mon-Fri 9AM-6PM IST')] %}
+        <div class="p-3 rounded-3" style="background:white;border:1px solid var(--gray-200)">
+          <div class="d-flex gap-3 align-items-center">
+            <div style="width:42px;height:42px;background:var(--primary-light);border-radius:10px;display:flex;align-items:center;justify-content:center"><i class="fa {{ c[0] }} text-primary"></i></div>
+            <div><div class="fw-700" style="font-size:0.85rem">{{ c[1] }}</div><div class="text-muted" style="font-size:0.8rem">{{ c[2] }}</div></div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="col-md-8">
+      <div class="checkout-section">
+        <h5 class="fw-700 mb-4">Send a Message</h5>
+        <div id="contactSuccess" class="alert alert-success d-none"><i class="fa fa-check-circle me-2"></i>Message sent! We'll respond within 24 hours.</div>
+        <form id="contactForm" onsubmit="sendContact(event)">
+          <div class="row g-3">
+            <div class="col-md-6"><label class="form-label fw-600">Your Name</label><input type="text" class="form-control" name="name" required placeholder="John Doe" style="border-radius:10px;padding:0.7rem 1rem"></div>
+            <div class="col-md-6"><label class="form-label fw-600">Email</label><input type="email" class="form-control" name="email" required placeholder="you@example.com" style="border-radius:10px;padding:0.7rem 1rem"></div>
+            <div class="col-12"><label class="form-label fw-600">Subject</label><input type="text" class="form-control" name="subject" required placeholder="How can we help?" style="border-radius:10px;padding:0.7rem 1rem"></div>
+            <div class="col-12"><label class="form-label fw-600">Message</label><textarea class="form-control" name="message" rows="5" required placeholder="Describe your issue or question..." style="border-radius:10px;padding:0.75rem 1rem"></textarea></div>
+          </div>
+          <button type="submit" class="btn-primary-main btn mt-4" id="contactBtn">Send Message <i class="fa fa-paper-plane ms-1"></i></button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+async function sendContact(e) {
+  e.preventDefault();
+  const btn = document.getElementById('contactBtn');
+  btn.disabled = true; btn.textContent = 'Sending...';
+  const data = Object.fromEntries(new FormData(e.target));
+  const res = await fetch('/contact', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) });
+  if (res.ok) { document.getElementById('contactSuccess').classList.remove('d-none'); e.target.reset(); }
+  else Toast.show('Failed to send message', 'error');
+  btn.disabled = false; btn.innerHTML = 'Send Message <i class="fa fa-paper-plane ms-1"></i>';
+}
+</script>
+{% endblock %}

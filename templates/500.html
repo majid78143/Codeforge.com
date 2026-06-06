@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}500 - Server Error{% endblock %}
+{% block content %}
+<div class="min-vh-100 d-flex align-items-center justify-content-center text-center py-5">
+  <div>
+    <div style="font-size:6rem;font-weight:900;color:var(--warning)">500</div>
+    <h2 class="fw-800 mb-2">Internal Server Error</h2>
+    <p class="text-muted mb-4">Something went wrong on our end. Please try again shortly.</p>
+    <a href="/" class="btn-primary-main btn">Go Home</a>
+  </div>
+</div>
+{% endblock %}
